@@ -7,10 +7,10 @@ using System.Collections.Generic;
 
 public class GameGenField : MonoBehaviour {
 
-	public Transform blue;
-	public Transform yellow;
-	public Transform green;
-	public Transform red;
+	public GameObject blue;
+	public GameObject yellow;
+	public GameObject green;
+	public GameObject red;
 
 	public float startX = 0.5f;
 	public float startY = -2.2f;
@@ -18,7 +18,8 @@ public class GameGenField : MonoBehaviour {
 	GameObject newCircle;
 
 	float nextUsage;
-	float delay = 0.5f;
+	public float firstDelay = 1.8f;
+	public float delay = 0.5f;
 
 	GameObject deletedObj;
 	GameObject panel1;
@@ -27,13 +28,19 @@ public class GameGenField : MonoBehaviour {
 	
 	int goal = 0;
 	public int shags = 15;
-	int totalShags=0;
+//	int totalShags=0;
 
 	GameObject goalLabel, shagLabel;
 
+	GameObject gUnit;
+
 	void  Start() {
+
+
+
+		nextUsage = Time.time + firstDelay;
 		initGameField ();
-		nextUsage = Time.time + delay;
+
 
 		goalLabel = GameObject.Find("GoalLabel") as GameObject;
 		shagLabel = GameObject.Find("ShagLabel") as GameObject;
@@ -43,10 +50,13 @@ public class GameGenField : MonoBehaviour {
 		panel1 = GameObject.Find ("PanelConfirmExit") as GameObject;
 		panel1.SetActive (false);
 
+
+		deletedObj = new GameObject();
+		deletedObj.transform.position = new Vector2(-20,-20);
+
 	}
 
 	void Awake(){
-		deletedObj = new GameObject();
 
 	
 
@@ -54,54 +64,53 @@ public class GameGenField : MonoBehaviour {
 	}
 
 
-
-	
+		
 	// Update is called once per frame
 	void Update () {
-	
-	
-
-		if (Input.GetMouseButtonDown(0)&& Time.time > nextUsage && activeGame)
-		{
-
-	
-		
-
-			Vector2 worldPoint = Camera.main.ScreenToWorldPoint( Input.mousePosition );
-			RaycastHit2D hit = Physics2D.Raycast( worldPoint, Vector2.zero );
-
-			deletedObj.transform.DetachChildren();
-			deletedObj.transform.position = new Vector2(0,0);
-		
-			if(hit.collider != null)
-			{
-		
-				testRight(hit);
-     		    testLeft(hit);
-
-				if(deletedObj.transform.childCount>1) 
+				if (Input.GetMouseButton(0)&& Time.time > nextUsage && activeGame)
 				{
-				    hit.transform.parent = deletedObj.transform;
-					deletedObj.transform.position = new Vector2(-100,-100);
-					respawnNewCircles();
-					addPoints((deletedObj.transform.childCount)*10);
-					calcShags((deletedObj.transform.childCount-1));
-				
-				}
-				else{
+					
+					
+					
+					
+					Vector2 worldPoint = Camera.main.ScreenToWorldPoint( Input.mousePosition );
+					RaycastHit2D hit = Physics2D.Raycast( worldPoint, Vector2.zero );
+					
 					deletedObj.transform.DetachChildren();
-					hit.transform.parent = deletedObj.transform;
-				    deletedObj.transform.position = new Vector2(-100,-100);
-					respawnNewCircles();
-					addPoints(10);
-					calcShags(-1);
+					deletedObj.transform.position = new Vector2(-20,-20);
+					
+					if(hit.collider != null)
+					{
+						
+						testRight(hit);
+						testLeft(hit);
+						
+						if(deletedObj.transform.childCount>1) 
+						{
+							hit.transform.parent = deletedObj.transform;
+							deletedObj.transform.position = new Vector2(-100,-100);
+							respawnNewCircles();
+							addPoints((deletedObj.transform.childCount)*10);
+							calcShags((deletedObj.transform.childCount-1));
+							
+						}
+						else{
+							deletedObj.transform.DetachChildren();
+							hit.transform.parent = deletedObj.transform;
+							deletedObj.transform.position = new Vector2(-100,-100);
+							respawnNewCircles();
+							addPoints(10);
+							calcShags(-1);
+						}
+						nextUsage = Time.time + delay;
+						//				Debug.Log(hit.collider.name + " " +newBehaviourScript.getType());
+						
+						
+					}
 				}
-				nextUsage = Time.time + delay;
-//				Debug.Log(hit.collider.name + " " +newBehaviourScript.getType());
-		
-		
-			}
-		}
+	
+
+
 
 
 
@@ -114,7 +123,7 @@ public class GameGenField : MonoBehaviour {
 	}
 
 	void calcShags(int shag){
-		totalShags++;
+		//totalShags++;
 		shags = shags + shag;
 		shagLabel.GetComponent<Text>().text = shags + "";
 		if (shags < 1) gameOver ();
@@ -130,15 +139,21 @@ public class GameGenField : MonoBehaviour {
 		btnGoBack.SetActive (false);
 		panel1.SetActive (true);
 
-
+		//write gameresult to userprefs
+		int j = 0;
+		while(PlayerPrefs.HasKey("game_" + j))
+		{
+			j++;
+		}
+		PlayerPrefs.SetString("game_" + j, DateTime.Now+";"+goal);
 
 
 	}
 
 	void respawnNewCircles(){
 		float x=0.5f, y=2.8f;
-		startX = 0;
-		startY = 0;
+//		startX = 0;
+//		startY = 0;
 
 		for (int i=0; i<5; i++) {
 			Vector2 worldPoint = new Vector2 (x+i, y);
@@ -245,9 +260,9 @@ public class GameGenField : MonoBehaviour {
 	void initGameField(){
 
 
-		for (float y = 0; y < 5; y=y+1) {
-		for (float x = 0; x < 5; x=x+1) {
-				setRNDCircle(x,y);
+		for (float y = 0; y < 5; y++) {
+		for (float x = 0; x < 5; x++) {
+				setRNDCircle(startX+x,startY+y);
 		}
 		}
 	}
@@ -260,16 +275,20 @@ public class GameGenField : MonoBehaviour {
 
 		switch (rndN) {
 		case 1:
-			Instantiate(blue, new Vector3(startX+x, startY+y, 0), Quaternion.identity);
+			//gUnit = (GameObject)Instantiate(blue, new Vector3(startX+x, startY+y, 0), Quaternion.identity);
+			gUnit = (GameObject)Instantiate(blue, new Vector2(x,y), Quaternion.identity);
 			break;
 		case 2:
-			Instantiate(yellow, new Vector3(startX+x, startY+y, 0), Quaternion.identity);
+			//gUnit = (GameObject) Instantiate(yellow, new Vector3(startX+x, startY+y, 0), Quaternion.identity);
+			gUnit = (GameObject)Instantiate(yellow, new Vector2(x, y), Quaternion.identity);
 			break;
 		case 3:
-			Instantiate(green, new Vector3(startX+x, startY+y, 0), Quaternion.identity);
+			//gUnit = (GameObject) Instantiate(green, new Vector3(startX+x, startY+y, 0), Quaternion.identity);
+			gUnit = (GameObject)Instantiate(green, new Vector2(x, y), Quaternion.identity);
 			break;
 		case 4:
-			Instantiate(red, new Vector3(startX+x, startY+y, 0), Quaternion.identity);
+			//gUnit = (GameObject) Instantiate(red, new Vector3(startX+x, startY+y, 0), Quaternion.identity);
+			gUnit = (GameObject)Instantiate(red, new Vector2(x, y), Quaternion.identity);
 			break;
 		}
 	}
