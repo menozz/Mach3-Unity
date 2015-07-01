@@ -11,6 +11,7 @@ public class Menu : MonoBehaviour {
 	void Awake () {
 		panel1 = GameObject.Find ("PanelConfirmExit");
 		panel1.SetActive (false);
+		ScoresManager.Instance.activeGame = true;
 	}
 
 	void Update() {
