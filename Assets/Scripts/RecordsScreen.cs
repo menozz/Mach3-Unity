@@ -27,9 +27,9 @@ public class RecordsScreen : MonoBehaviour {
 		canv = GameObject.Find ("Canvas1");
 
 
-		//theGalaxies = this.GetComponent<LoadRecords> ().getList ();
+	
 		if(!PlayerPrefs.HasKey("game_0")){
-			Debug.Log("load from csv");
+		
 			csvread = new CSVReader ();
 			theGalaxies = csvread.getList();
 
@@ -63,23 +63,10 @@ public class RecordsScreen : MonoBehaviour {
 		};
 
 
-//
-//		if (ScoresManager.Instance.showNewScrorec) {
-//			hRecord.transform.GetComponent<FlashText>().flash();
-//			ScoresManager.Instance.showNewScrorec = false;
-//		}
-
 
 
 	}
 
-//	public class GoalStr{
-//		public string Date_ { get; set; }
-//		public int Goals_ { get; set; }
-//		public GoalStr(){
-//			
-//		}
-//	}
 
 	
 
