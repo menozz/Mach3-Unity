@@ -10,13 +10,12 @@ public class RecordsScreen : MonoBehaviour {
 	public int shagY = -30;
 	int y=0;
 
-	List<GoalStr> theGalaxies;
+	List<GoalStr> recList;
 
 	public GameObject hScoreField;
 	GameObject canv;
 
 	LoadRecords lrec;
-	CSVReader csvread;
 
 	// Use this for initialization
 	void Start () {
@@ -27,49 +26,24 @@ public class RecordsScreen : MonoBehaviour {
 		canv = GameObject.Find ("Canvas1");
 
 
-	
-		if(!PlayerPrefs.HasKey("game_0")){
-		
-			csvread = new CSVReader ();
-			theGalaxies = csvread.getList();
-
-			foreach(GoalStr fvar in theGalaxies)
-			{
-				hRecord =(GameObject) Instantiate(hScoreField, new Vector2(startX, startY+y), Quaternion.identity); 
-				hRecord.transform.SetParent(canv.transform,false);
-				hRecord.transform.GetChild(0).GetComponent<Text>().text = fvar.Date_;
-				hRecord.transform.GetChild(1).GetComponent<Text>().text = fvar.Goals_+"";
-			
-				y=y+shagY;
+		lrec = new LoadRecords();
+		lrec.initRecScreen();
+		recList = lrec.getList ();
+		int j = 0;
+		while(PlayerPrefs.HasKey("game_" + j))
+		{
+			hRecord =(GameObject) Instantiate(hScoreField, new Vector2(startX, startY+y), Quaternion.identity); 
+			hRecord.transform.SetParent(canv.transform,false);
+			hRecord.transform.GetChild(0).GetComponent<Text>().text = recList[j].Date_;
+			hRecord.transform.GetChild(1).GetComponent<Text>().text = recList[j].Goals_+"";
+			if(j==0 && GameManager.Instance.showNewScrorec ){
+				hRecord.transform.GetComponent<FlashText>().flash();
+				GameManager.Instance.showNewScrorec = false;
 			}
-		}else {
-			lrec = new LoadRecords();
-			theGalaxies = lrec.getList ();
-			int j = 0;
-			while(PlayerPrefs.HasKey("game_" + j))
-			{
-				hRecord =(GameObject) Instantiate(hScoreField, new Vector2(startX, startY+y), Quaternion.identity); 
-				hRecord.transform.SetParent(canv.transform,false);
-				hRecord.transform.GetChild(0).GetComponent<Text>().text = theGalaxies[j].Date_;
-				hRecord.transform.GetChild(1).GetComponent<Text>().text = theGalaxies[j].Goals_+"";
-				if(j==0 && ScoresManager.Instance.showNewScrorec ){
-					hRecord.transform.GetComponent<FlashText>().flash();
-					ScoresManager.Instance.showNewScrorec = false;
-				}
-				y=y+shagY;
-				j++;
-			}
-		
-		};
-
-
-
+			y=y+shagY;
+			j++;
+		}
 
 	}
-
-
 	
-
-
-
 }

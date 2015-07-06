@@ -19,8 +19,8 @@ public class GameGenField : MonoBehaviour {
 
 	float nextUsage;
 	public float firstDelay = 1.8f;
-	public float delay = 0.5f;
-	public float waitForDeleteObj = 1.5f;
+	public float delay = 0.35f;
+
 
 	GameObject deletedObj;
 	GameObject panel1;
@@ -70,23 +70,21 @@ public class GameGenField : MonoBehaviour {
 	void Update () {
 		Vector2 worldPoint;
 		RaycastHit2D hit;
-		//Debug.Log(ScoresManager.Instance.firstGame);
-		if (ScoresManager.Instance.firstGame) {
-			if (Input.GetMouseButtonUp(0) && Time.time > nextUsage && ScoresManager.Instance.activeGame){
+
+		if (GameManager.Instance.firstGame) {
+			if (Input.GetMouseButtonUp(0) && Time.time > nextUsage && GameManager.Instance.activeGame){
 				worldPoint = Camera.main.ScreenToWorldPoint( Input.mousePosition );
 				hit = Physics2D.Raycast( worldPoint, Vector2.zero );
 
 				if(hit.collider != null && hit.transform.GetComponent<circle_controller>().firsStart==true)
 				{
-
 					hit.transform.GetComponent<circle_controller>().firsStartOff();
-					ScoresManager.Instance.firstGame= false;
+					GameManager.Instance.firstGame= false;
 					StartCoroutine(runNormalGame(hit));
-
 				}
 			}
 
-		}else if (Input.GetMouseButtonUp(0) && Time.time > nextUsage && ScoresManager.Instance.activeGame) {
+		}else if (Input.GetMouseButtonUp(0) && Time.time > nextUsage && GameManager.Instance.activeGame) {
 			worldPoint = Camera.main.ScreenToWorldPoint( Input.mousePosition );
 			hit = Physics2D.Raycast( worldPoint, Vector2.zero );
 
@@ -105,82 +103,59 @@ public class GameGenField : MonoBehaviour {
 	}
 
 	IEnumerator runNormalGame(RaycastHit2D hit) {
-		
-		yield return new WaitForSeconds(0.3f);
+		yield return new WaitForSeconds(0.5f);
 		gameNormal (hit);
 	}
 
 	void gameNormal(RaycastHit2D hit){
-	
-			
 			if(hit.collider != null)
 			{
-				
-				
-				
-				
-				
-				
-				
 				testRight(hit);
 				testLeft(hit);
 				
 				if(deletedObj.transform.childCount>1) 
 				{
 					StartCoroutine(deleteAll(hit));
-					
 				}
 				else{
-					
 					StartCoroutine(deleteOne(hit));
-					
 				}
 				nextUsage = Time.time + delay;
-
-				
-				
 			}
-
 	}
 
 
 
 	IEnumerator deleteAll(RaycastHit2D hit) {
-
-
-
 		hit.transform.parent = deletedObj.transform;
 		for (int i=0; i<deletedObj.transform.childCount; i++) {
 			deletedObj.transform.GetChild(i).GetComponent<circle_controller>().destroyed();
 		}
-
-		yield return new WaitForSeconds(waitForDeleteObj);
-
-
+		yield return new WaitForSeconds(delay);
 		deletedObj.transform.position = new Vector2(-100,-100);
 		respawnNewCircles();
 		addPoints((deletedObj.transform.childCount)*10);
 		calcShags((deletedObj.transform.childCount-1));
-
-		deletedObj.transform.DetachChildren();
+		for (int i=0; i<deletedObj.transform.childCount; i++) {
+			Destroy (deletedObj.transform.GetChild(i).gameObject);
+		}
 		deletedObj.transform.position = new Vector2(-20,-20);
 	}
 
 
 
 	IEnumerator deleteOne(RaycastHit2D hit) {
-
-		hit.transform.GetComponent<circle_controller>().destroyed();
-
-		yield return new WaitForSeconds(waitForDeleteObj);
 		deletedObj.transform.DetachChildren();
 		hit.transform.parent = deletedObj.transform;
+		hit.transform.GetComponent<circle_controller>().destroyed();
+		yield return new WaitForSeconds(delay);
 		deletedObj.transform.position = new Vector2(-100,-100);
 		respawnNewCircles();
 		addPoints(10);
 		calcShags(-1);
-
-		deletedObj.transform.DetachChildren();
+		for (int i=0; i<deletedObj.transform.childCount; i++) {
+			Destroy (deletedObj.transform.GetChild(i).gameObject);
+		}
 		deletedObj.transform.position = new Vector2(-20,-20);
 	}
 
@@ -190,7 +165,6 @@ public class GameGenField : MonoBehaviour {
 	}
 
 	void calcShags(int shag){
-		//totalShags++;
 		shags = shags + shag;
 		shagLabel.GetComponent<Text>().text = shags + "";
 		if (shags < 1) gameOver ();
@@ -198,38 +172,27 @@ public class GameGenField : MonoBehaviour {
 
 
 	void gameOver(){
-
-
-
 		LoadRecords lrec = new LoadRecords();
-		List<GoalStr> theGalaxies = lrec.getList ();
-		if (goal > theGalaxies [0].Goals_) {
+		lrec.initRecScreen ();
+		List<GoalStr> recList = lrec.getList ();
+		if (goal > recList [0].Goals_) {
 
-			int j = 0;
-			while (PlayerPrefs.HasKey("game_" + j)) {
-				j++;
+				int j = 0;
+			    while (PlayerPrefs.HasKey("game_" + j))
+			    {
+					j++;
+				}
+				PlayerPrefs.SetString ("game_" + j, DateTime.Now + ";" + goal);
+			    GameManager.Instance.showNewScrorec = true;
+				Application.LoadLevel (3);
+			} else {
+			    GameManager.Instance.activeGame = false;
+				btnGoBack = GameObject.Find ("ButtonGoBack");
+				btnGoBack.SetActive (false);
+				panel1.SetActive (true);
 			}
-			PlayerPrefs.SetString ("game_" + j, DateTime.Now + ";" + goal);
-			ScoresManager.Instance.showNewScrorec = true;
-			Application.LoadLevel (3);
-		} else {
-			ScoresManager.Instance.activeGame = false;
-			btnGoBack = GameObject.Find ("ButtonGoBack");
-			btnGoBack.SetActive (false);
-			panel1.SetActive (true);
-		}
 
-
-	
-
-
-
-
-
-
-
-
-	}
+}
 
 	void respawnNewCircles(){
 		float x=0.5f, y=2.8f;
@@ -237,21 +200,17 @@ public class GameGenField : MonoBehaviour {
 		for (int i=0; i<5; i++) {
 			Vector2 worldPoint = new Vector2 (x+i, y);
 			RaycastHit2D hit = Physics2D.Raycast (worldPoint, Vector2.zero);
-		
-
 			if (hit.collider == null) {
 				setRNDCircle (x+i, y);
-							}
+			}
 	
 		}
 	}
 
 
 	void testRight (RaycastHit2D hit){
-
 		RaycastHit2D hitNew;
-
-		hit.collider.enabled = false;
+    	hit.collider.enabled = false;
 		hitNew = Physics2D.Raycast (hit.transform.position, hit.transform.right);
 		hit.collider.enabled = true;
 		for (int i =0; i<4; i++){
@@ -265,15 +224,11 @@ public class GameGenField : MonoBehaviour {
 				hit.collider.enabled = true;
 			}
 	}
-
-
-
-
-		}
+	
+}
 
 
 	void testLeft (RaycastHit2D hit){
-
 		RaycastHit2D hitNew;
 		hit.collider.enabled = false;
 		hitNew = Physics2D.Raycast (hit.transform.position, -hit.transform.right);
@@ -302,28 +257,20 @@ public class GameGenField : MonoBehaviour {
 		}
 	}
 
-
-
-
 	void setRNDCircle(float x,float y){
 		int rndN = UnityEngine.Random.Range(1, 5);
 
 		switch (rndN) {
 		case 1:
-		
-
 			Instantiate(blue, new Vector2(x,y), Quaternion.identity);
 			break;
 		case 2:
-
 			Instantiate(yellow, new Vector2(x, y), Quaternion.identity);
 			break;
 		case 3:
-
 		     Instantiate(green, new Vector2(x, y), Quaternion.identity);
 			break;
 		case 4:
-
 			Instantiate(red, new Vector2(x, y), Quaternion.identity);
 			break;
 		}

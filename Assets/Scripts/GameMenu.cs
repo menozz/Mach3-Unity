@@ -16,12 +16,12 @@ public class GameMenu : MonoBehaviour {
 	
 	public void onExitClick(){
 		panel1.SetActive (true);
-		ScoresManager.Instance.activeGame = false;
+		GameManager.Instance.activeGame = false;
 	}
 	
 	public void closeExitConfirmPanel(){
 		panel1.SetActive (false);
-		ScoresManager.Instance.activeGame = true;
+		GameManager.Instance.activeGame = true;
 	}
 	
 	public void confirmExit(){

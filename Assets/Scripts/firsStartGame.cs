@@ -21,9 +21,8 @@ public class firsStartGame : MonoBehaviour {
 		
 		int rndX = UnityEngine.Random.Range(0, 5);
 		int rndY = UnityEngine.Random.Range(0, 5);	
-		ScoresManager.Instance.fX = startX + rndX;
-		ScoresManager.Instance.fY = startY + rndY;
-		//Debug.Log(new Vector2(startX+rndX,startY+rndY));
+		GameManager.Instance.fX = startX + rndX;
+		GameManager.Instance.fY = startY + rndY;
 		yield return new WaitForSeconds(firstDelay);
 		RaycastHit2D hit = Physics2D.Raycast( new Vector2(startX+rndX,startY+rndY), Vector2.zero );
 		hit.transform.GetComponent<circle_controller> ().firsStartOn ();
