@@ -103,7 +103,9 @@ public class GameGenField : MonoBehaviour {
 	}
 
 	IEnumerator runNormalGame(RaycastHit2D hit) {
-		yield return new WaitForSeconds(0.5f);
+		yield return new WaitForSeconds(0.15f);
+		GameObject helptxt = GameObject.Find("HelpTXT") as GameObject;
+		helptxt.SetActive(false);
 		gameNormal (hit);
 	}
 
