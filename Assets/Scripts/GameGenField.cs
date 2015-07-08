@@ -7,27 +7,44 @@ using System.Collections.Generic;
 
 public class GameGenField : MonoBehaviour {
 
+	/// <summary>
+	/// Основной скрипт управляющий игрой
+	/// </summary>
+
+    // префабы для загрузки шариков разных цветов
 	public GameObject blue;
 	public GameObject yellow;
 	public GameObject green;
 	public GameObject red;
 
+	/// <summary>
+	/// Стартовые координаты для сетки шариков
+	/// </summary>
 	public float startX = 0.5f;
 	public float startY = -2.2f;
 
-	GameObject newCircle;
 
+	//GameObject newCircle;
+
+	/// <summary>
+	/// переменные, куда записываются таймеры, по которым проверяется возможность следующего нажатия по шарику
+	/// </summary>
 	float nextUsage;
 	public float firstDelay = 1.8f;
 	public float delay = 0.35f;
 
 
+	// объект, к которому привязываются удаляемы объекты
 	GameObject deletedObj;
+
+	// игровые диалоги
 	GameObject panel1;
 	GameObject panelConfirmExit;
 
+	// кнока "назад"
 	GameObject btnGoBack;
 
+	// хранятся очки и количество ходов
 	int goal = 0;
 	public int shags = 15;
 
@@ -37,23 +54,31 @@ public class GameGenField : MonoBehaviour {
 	void  Start() {
 
 
-
+		// В эту переменную записывается время , после которого возможно следующее нажатие на шарик
 		nextUsage = Time.time + firstDelay;
+
+
+		// создаем объект, через который будет удалять шарики
+//		deletedObj = new GameObject();
+//		deletedObj.transform.position = new Vector2(0,0);
+		deletedObj = GameObject.Find("deleteObj");
+
+
+//		// запуск метода по создания игрового поля
 		initGameField ();
 
-
+		// получаем досту к элементам худа которые выводят количество очков и ходов, и заполняем их
 		goalLabel = GameObject.Find("GoalLabel") as GameObject;
 		shagLabel = GameObject.Find("ShagLabel") as GameObject;
 		goalLabel.GetComponent<Text>().text = goal + "";
 		shagLabel.GetComponent<Text>().text = shags + "";
 
+		// пока что отключаем диалог gameover
 		panel1 = GameObject.Find ("PanelGameOver") as GameObject;
 		panel1.SetActive (false);
 
 
 
-		deletedObj = new GameObject();
-		deletedObj.transform.position = new Vector2(-20,-20);
 
 	}
 
@@ -68,14 +93,21 @@ public class GameGenField : MonoBehaviour {
 		
 
 	void Update () {
+		// переменные через которые мы будем получать шарик, по которому нажал игрока
 		Vector2 worldPoint;
 		RaycastHit2D hit;
 
+
+		// проверяется, первый ли это запуск игрового экрана
 		if (GameManager.Instance.firstGame) {
+			// Проверяется можно ли нажать по полю
 			if (Input.GetMouseButtonUp(0) && Time.time > nextUsage && GameManager.Instance.activeGame){
+
+				// получаем объект, по которому нажимал игрок
 				worldPoint = Camera.main.ScreenToWorldPoint( Input.mousePosition );
 				hit = Physics2D.Raycast( worldPoint, Vector2.zero );
 
+				// проверяем, обучающий ли это шарик, и если да, отключаем анимацию мигания, выключаем режим обучения и запускаем метод для уничтожения шариков
 				if(hit.collider != null && hit.transform.GetComponent<circle_controller>().firsStart==true)
 				{
 					hit.transform.GetComponent<circle_controller>().firsStartOff();
@@ -84,10 +116,16 @@ public class GameGenField : MonoBehaviour {
 				}
 			}
 
-		}else if (Input.GetMouseButtonUp(0) && Time.time > nextUsage && GameManager.Instance.activeGame) {
+
+		}
+		// проверяется нажатие по полю, если уже идет обычный режим
+		else if (Input.GetMouseButtonUp(0) && Time.time > nextUsage && GameManager.Instance.activeGame) {
+
+			// получаем объект, по которому нажимал игрок
 			worldPoint = Camera.main.ScreenToWorldPoint( Input.mousePosition );
 			hit = Physics2D.Raycast( worldPoint, Vector2.zero );
 
+			// проверяем, существует ли объект и если да, запускаем метод уничтожения
 			if(hit.collider != null)
 			{
 				gameNormal(hit);
@@ -102,6 +140,7 @@ public class GameGenField : MonoBehaviour {
 
 	}
 
+	// функция которая запускается при нажатии по обучающему шарику, чтобы дать время на отключения мигания, выключения текста подсказки, и запуск обычной проверки на уничтожения шариков
 	IEnumerator runNormalGame(RaycastHit2D hit) {
 		yield return new WaitForSeconds(0.15f);
 		GameObject helptxt = GameObject.Find("HelpTXT") as GameObject;
@@ -109,25 +148,34 @@ public class GameGenField : MonoBehaviour {
 		gameNormal (hit);
 	}
 
+
+	// метод для обычного режима игры
 	void gameNormal(RaycastHit2D hit){
 			if(hit.collider != null)
 			{
-				testRight(hit);
+				// если игрок нажал по шарику, то вызываются методы, проверяющие, совпадаюти шарики или нет 
+			    testRight(hit);
 				testLeft(hit);
 				
+			    // есди 3 и больше шарика, то запускается первый метод
 				if(deletedObj.transform.childCount>1) 
 				{
 					StartCoroutine(deleteAll(hit));
 				}
+
+			     // если шарик один, запускается второй метод
 				else{
 					StartCoroutine(deleteOne(hit));
 				}
+
+			     // устанавливается время, после которого можно снова нажать по шарику
 				nextUsage = Time.time + delay;
 			}
 	}
 
 
 
+	// метод, удаляющий все шарики в линии, если их 3  и больше
 	IEnumerator deleteAll(RaycastHit2D hit) {
 		hit.transform.parent = deletedObj.transform;
 		for (int i=0; i<deletedObj.transform.childCount; i++) {
@@ -145,7 +193,7 @@ public class GameGenField : MonoBehaviour {
 	}
 
 
-
+	//метод, удаляющий только выбранный шарик, если их набралось меньше трех одинаковых
 	IEnumerator deleteOne(RaycastHit2D hit) {
 		deletedObj.transform.DetachChildren();
 		hit.transform.parent = deletedObj.transform;
@@ -161,11 +209,13 @@ public class GameGenField : MonoBehaviour {
 		deletedObj.transform.position = new Vector2(-20,-20);
 	}
 
+	// подсчет текущих очков в игре
 	void addPoints(int addP){
 		goal = goal + addP;
 		goalLabel.GetComponent<Text>().text = goal + "";
 	}
 
+	// подсчет оставшихся ходов в игре
 	void calcShags(int shag){
 		shags = shags + shag;
 		shagLabel.GetComponent<Text>().text = shags + "";
@@ -173,6 +223,7 @@ public class GameGenField : MonoBehaviour {
 	}
 
 
+	// метод, который решает, показать таблицу рекордов при новом рекорде, или просто выкинуть в меню в случае проигрыша
 	void gameOver(){
 		LoadRecords lrec = new LoadRecords();
 		lrec.initRecScreen ();
@@ -196,6 +247,7 @@ public class GameGenField : MonoBehaviour {
 
 }
 
+	// создание верхнего (шестого) ряда шариков, которые падают вниз,если какой либо из шариков сгорает
 	void respawnNewCircles(){
 		float x=0.5f, y=2.8f;
 
@@ -210,6 +262,7 @@ public class GameGenField : MonoBehaviour {
 	}
 
 
+	// проверка, есть ли справа от выбранного шарика, такие же шарики
 	void testRight (RaycastHit2D hit){
 		RaycastHit2D hitNew;
     	hit.collider.enabled = false;
@@ -217,8 +270,6 @@ public class GameGenField : MonoBehaviour {
 		hit.collider.enabled = true;
 		for (int i =0; i<4; i++){
 			if (hitNew.collider != null && hit.collider.name == hitNew.collider.name) {
-				Vector3 rDir = Quaternion.AngleAxis(-20.0f, Vector3.forward) * hit.transform.right;
-				Debug.DrawRay(hit.transform.localPosition, hit.transform.right+rDir*3f, Color.red);
 				hitNew.transform.parent = deletedObj.transform;
 				hit = hitNew;
 				hit.collider.enabled = false;
@@ -229,7 +280,7 @@ public class GameGenField : MonoBehaviour {
 	
 }
 
-
+	// проверка, есть ли слева от выбранного шарика, такие же шарики
 	void testLeft (RaycastHit2D hit){
 		RaycastHit2D hitNew;
 		hit.collider.enabled = false;
@@ -249,16 +300,17 @@ public class GameGenField : MonoBehaviour {
 
 	
 
-
+	// задание координат для генерации первоначальной сетки шариков
 	void initGameField(){
 
-		for (float y = 0; y < 5; y++) {
-		for (float x = 0; x < 5; x++) {
+		for (int y = 0; y < 5; y++) {
+		for (int x = 0; x < 5; x++) {
 				setRNDCircle(startX+x,startY+y);
 		}
 		}
 	}
 
+	// генерация случайного шарика в указанных координатах
 	void setRNDCircle(float x,float y){
 		int rndN = UnityEngine.Random.Range(1, 5);
 

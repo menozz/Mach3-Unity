@@ -6,6 +6,9 @@ using System.IO;
 
 public class LoadRecords{
 
+	//Файл, который управляет загрузкой записей списка рекордов
+
+
 	List<GoalStr> recList;
 
 	public LoadRecords(){
@@ -13,12 +16,13 @@ public class LoadRecords{
 
 	public void initRecordList(){
 	
-
-		if (Application.platform == RuntimePlatform.Android){
+		// Проверяет для Андроида, если список рекордов пуст, то создают 1 строчку
+		if (Application.platform == RuntimePlatform.Android && !PlayerPrefs.HasKey ("game_0") ){
 			PlayerPrefs.SetString ("game_0", "6/19/2015 11:19:56 PM;100");
 
 	    } else{
 	
+			// Проверяет для компьютера, если список рекордов пуст, то заполняет их из файла
 		if (!PlayerPrefs.HasKey ("game_0")) {
 			StreamReader reader = new StreamReader(File.OpenRead(@"data.csv"));
 			
@@ -39,7 +43,7 @@ public class LoadRecords{
 
 	}
 
-
+	// Метод загружает и сортирует список рекордов из userprefs 
 	public void initRecScreen(){
 		recList = new List<GoalStr>();
 
@@ -60,7 +64,7 @@ public class LoadRecords{
 	}
 
 
-
+	// возврат списка рекордов, при запросе из внешнего скрипта
 	public List<GoalStr> getList(){
 		return recList;
 	}

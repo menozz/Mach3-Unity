@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class FlashText : MonoBehaviour {
 
+	// Скрипт, который выделяет выбранную строку на экране рекордов(показывает запись с новым рекрдом)
+
 	// Use this for initialization
 	void Start () {
 	
