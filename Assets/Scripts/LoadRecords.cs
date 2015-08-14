@@ -15,31 +15,22 @@ public class LoadRecords{
 	}
 
 	public void initRecordList(){
-	
-		// Проверяет для Андроида, если список рекордов пуст, то создают 1 строчку
-		if (Application.platform == RuntimePlatform.Android && !PlayerPrefs.HasKey ("game_0") ){
-			PlayerPrefs.SetString ("game_0", "6/19/2015 11:19:56 PM;100");
+		string path = @"data.csv";
 
-	    } else{
-	
-			// Проверяет для компьютера, если список рекордов пуст, то заполняет их из файла
+
+		// Код для веб-версии, для ПК и мобильной версии условия надо делать наоборот
 		if (!PlayerPrefs.HasKey ("game_0")) {
-			StreamReader reader = new StreamReader(File.OpenRead(@"data.csv"));
+			PlayerPrefs.SetString ("game_0", "6/19/2015 11:19:56 PM;150");
+		}else if (!PlayerPrefs.HasKey ("game_0") && File.Exists (path)) {
+			StreamReader reader = new StreamReader (File.OpenRead (@"data.csv"));
 			
-			int i=0;
-			while (!reader.EndOfStream)
-			{
-				string line = reader.ReadLine();
+			int i = 0;
+			while (!reader.EndOfStream) {
+				string line = reader.ReadLine ();
 				PlayerPrefs.SetString ("game_" + i, line);
 				i++;
 			}
-		}
-	
-	
-	}
-	
-
-
+		} 
 
 	}
 
